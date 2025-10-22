@@ -1,1 +1,10 @@
 .DS_Store
+openspec/
+.serena
+.claude
+AGENTS.md
+CLAUDE.md
+.env
+logs/
+cookies/*.json
+!cookies/.gitkeep

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -13,7 +14,40 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 )
+
+func init() {
+	if err := loadEnvironmentConfig(); err != nil {
+		log.Fatalf("Failed to load environment configuration: %v", err)
+	}
+}
+
+func loadEnvironmentConfig() error {
+	const envPath = ".env"
+
+	info, err := os.Stat(envPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("%s not found; copy .env.example and provide required values", envPath)
+		}
+		return fmt.Errorf("unable to access %s: %w", envPath, err)
+	}
+
+	if info.IsDir() {
+		return fmt.Errorf("%s should be a file, not a directory", envPath)
+	}
+
+	if err := godotenv.Load(envPath); err != nil {
+		return fmt.Errorf("load %s: %w", envPath, err)
+	}
+
+	if value := os.Getenv("AUTH_API_KEY"); value == "" {
+		return fmt.Errorf("AUTH_API_KEY must be defined in %s", envPath)
+	}
+
+	return nil
+}
 
 // --- Constants ---
 const (

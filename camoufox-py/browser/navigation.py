@@ -1,6 +1,7 @@
 import time
 import os
 from playwright.sync_api import Page, expect
+from utils.paths import logs_dir
 
 def handle_untrusted_dialog(page: Page, logger=None):
     """
@@ -36,7 +37,8 @@ def handle_successful_navigation(page: Page, logger, cookie_file_config):
     logger.info("等待15秒以便页面完全渲染...")
     time.sleep(15)
     
-    screenshot_dir = 'logs'
+    screenshot_dir = logs_dir()
+    os.makedirs(screenshot_dir, exist_ok=True)
     screenshot_filename = os.path.join(screenshot_dir, f"screenshot_{cookie_file_config}_{int(time.time())}.png")
     try:
         page.screenshot(path=screenshot_filename, full_page=True)

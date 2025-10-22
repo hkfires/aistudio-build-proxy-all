@@ -1,4 +1,3 @@
-PyYAML==6.0.2
 camoufox[geoip]==0.4.11
 aiohappyeyeballs==2.6.1
 aiohttp==3.12.13

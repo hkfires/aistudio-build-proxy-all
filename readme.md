@@ -4,7 +4,7 @@
 问题: ~~当前cookie导出方式导出的cookie可能时效较短.~~ 指纹浏览器导出cookie很稳
 
 ## 使用方法:
-1. 导出Cookie到项目`camoufox-py/cookies/`文件夹下
+1. 导出Cookie到项目根目录下的 `cookies/` 文件夹
 
     #### 更稳定的方法：
    用指纹浏览器开个新窗口登录 google, 然后到指纹浏览器`编辑窗口`，把 cookie 复制出来用，然后删除浏览器窗口就行，这个 cookie 超稳！！！
@@ -19,24 +19,33 @@
     ![Global Cookie Manager](/img/Global_Cookie_Manager.png)
     ![Global Cookie Manager2](/img/Global_Cookie_Manager2.png)
     
-    (3) 粘贴到项目 `camoufox-py/cookies/[自己命名].json` 中
+    (3) 粘贴到项目 `cookies/[自己命名].json` 中
     </details>
-2. 修改浏览器配置`camoufox-py/config.yaml`
+    > 提醒：Cookie 文件必须以 `.json` 结尾，并存放在项目根目录的 `cookies/` 目录内，不要携带其他路径。
+2. 配置 `.env`
 
-    (1) 在`camoufox-py`下, 将示例配置文件`config.yaml.example`, 重命名为 `config.yaml`, 然后修改`config.yaml`
+    (1) 将根目录下的 `.env.example` 复制为 `.env`（此文件包含敏感信息，请勿提交到仓库）。
 
-    (2) 实例 1 的`cookie_file` 填入自己创建 cookie文件名
+    (2) 在 `.env` 中设置 `AUTH_API_KEY=...`。
 
-    (3) (可选项) `url` 默认为项目提供的AIStudio Build 链接(会连接本地5345的ws服务), 可修改为自己的
+    (3) 根据需要填写 Camoufox 运行参数：
+    ```
+    CAMOUFOX_HEADLESS=virtual          # 可设为 true / false / virtual
+    CAMOUFOX_PROXY=                    # 可选，设置全局代理
+    CAMOUFOX_INSTANCE_COUNT=1          # 需要启动的实例数量
 
-    (4) (可选项) proxy配置指定浏览器使用的代理服务器
-
-3. 修改`docker-compose.yml`
+    CAMOUFOX_INSTANCE_1_COOKIE_FILE=user1_cookie.json
+    CAMOUFOX_INSTANCE_1_URL=https://aistudio.google.com/apps/drive/...
+    # CAMOUFOX_INSTANCE_1_HEADLESS=false
+    # CAMOUFOX_INSTANCE_1_PROXY=http://user:pass@specific-proxy.com:9999
+    ```
+    如需更多实例，依次添加 `CAMOUFOX_INSTANCE_2_*`、`CAMOUFOX_INSTANCE_3_*` 等变量。
     
-    (1) 自己设置一个 `AUTH_API_KEY` , 最后自己调 gemini 时要使用该 apikey 调用, 不支持无 key
-4. 在项目根目录, 通过`docker-compose.yml`启动Docker容器
+    > 提示：容器启动时会自动读取 `.env`。若在本地直接运行脚本，请先 `source .env` 或手动导出这些环境变量。
 
-    (1) 运行命令启动容器
+3. 在项目根目录, 通过`docker-compose.yml`启动Docker容器
+
+    (1) 运行命令启动容器（确保 `.env` 已经按上一步配置完成）
     ```bash
     docker compose up -d
     ```
@@ -54,7 +63,7 @@ docker logs [容器名]
 ```
 2. 单独查看camoufox-py日志
 
-    camoufox-py/logs/app.log
+    logs/app.log
 
     且每次运行, logs下会有一张截图
 

@@ -5,6 +5,7 @@ from utils.logger import setup_logging
 from utils.cookie_handler import convert_cookie_editor_to_playwright
 from browser.navigation import handle_successful_navigation
 from camoufox.sync_api import Camoufox
+from utils.paths import cookies_dir, logs_dir
 
 def run_browser_instance(config):
     """
@@ -12,9 +13,30 @@ def run_browser_instance(config):
     新增了对导航后URL的检查和处理逻辑，并极大地增强了 page.goto 的错误处理和日志记录。
     """
     cookie_file_config = config.get('cookie_file')
-    cookie_file = os.path.join('cookies', cookie_file_config)
-    logger = setup_logging(os.path.join('logs', 'app.log'), prefix=f"{cookie_file_config}")
-    
+    cookie_file_name = os.path.basename(cookie_file_config) if cookie_file_config else None
+    logger = setup_logging(
+        os.path.join(logs_dir(), 'app.log'), prefix=f"{cookie_file_name or 'bootstrap'}"
+    )
+
+    if not cookie_file_name:
+        logger.error("错误: 配置缺少 cookie_file，无法启动浏览器实例。")
+        return
+
+    if cookie_file_name != cookie_file_config:
+        logger.error(f"错误: cookie_file 必须仅包含文件名，不允许携带路径: {cookie_file_config}")
+        return
+
+    if not cookie_file_name.lower().endswith('.json'):
+        logger.error(f"错误: cookie_file 必须是 .json 文件: {cookie_file_config}")
+        return
+
+    cookies_root = cookies_dir().resolve()
+    cookie_file = cookies_root / cookie_file_name
+    resolved_cookie = cookie_file.resolve()
+    if cookies_root not in resolved_cookie.parents:
+        logger.error(f"错误: cookie_file 必须位于 cookies/ 目录下: {cookie_file_config}")
+        return
+
     logger.info(f"尝试加载 Cookie 文件: {cookie_file}")
 
     expected_url = config.get('url')
@@ -48,7 +70,7 @@ def run_browser_instance(config):
     # 无需禁用图片加载, 因为图片很少, 禁用还可能导致风控增加
     # launch_options["block_images"] = True
     
-    screenshot_dir = 'logs'
+    screenshot_dir = logs_dir()
     os.makedirs(screenshot_dir, exist_ok=True)
 
     try:
