@@ -26,24 +26,24 @@ func init() {
 func loadEnvironmentConfig() error {
 	const envPath = ".env"
 
-	info, err := os.Stat(envPath)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("%s not found; copy .env.example and provide required values", envPath)
+	info, statErr := os.Stat(envPath)
+	if statErr == nil {
+		if info.IsDir() {
+			return fmt.Errorf("%s should be a file, not a directory", envPath)
 		}
-		return fmt.Errorf("unable to access %s: %w", envPath, err)
-	}
 
-	if info.IsDir() {
-		return fmt.Errorf("%s should be a file, not a directory", envPath)
-	}
-
-	if err := godotenv.Load(envPath); err != nil {
-		return fmt.Errorf("load %s: %w", envPath, err)
+		if err := godotenv.Load(envPath); err != nil {
+			return fmt.Errorf("load %s: %w", envPath, err)
+		}
+	} else if !errors.Is(statErr, os.ErrNotExist) {
+		return fmt.Errorf("unable to access %s: %w", envPath, statErr)
 	}
 
 	if value := os.Getenv("AUTH_API_KEY"); value == "" {
-		return fmt.Errorf("AUTH_API_KEY must be defined in %s", envPath)
+		if errors.Is(statErr, os.ErrNotExist) {
+			return fmt.Errorf("AUTH_API_KEY must be provided via environment variables or %s, but the file is missing", envPath)
+		}
+		return fmt.Errorf("AUTH_API_KEY must be defined in %s or the environment", envPath)
 	}
 
 	return nil
