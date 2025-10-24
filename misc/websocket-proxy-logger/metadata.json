@@ -1,0 +1,6 @@
+{
+  "name": "127 of WebSocket Proxy Logger",
+  "description": "A minimal web application to connect to a WebSocket proxy service and view real-time logs of its activity.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
